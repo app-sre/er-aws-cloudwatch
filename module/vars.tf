@@ -16,6 +16,12 @@ variable "es_identifier" {
   default     = null
 }
 
+variable "release_tag_name" {
+  description = "The value of `tag_name` attribute at /releases/latest endpoint for api.github.com for target lambda repo"
+  type        = string
+  default     = "1.0.4"
+}
+
 # Variables directly used by resources
 ## aws_cloudwatch_log_group
 variable "retention_in_days" {
@@ -28,27 +34,30 @@ variable "runtime" {
   type    = string
   default = "nodejs18.x"
 }
+
 variable "timeout" {
   type    = number
   default = 30
 }
+
 variable "handler" {
   type    = string
   default = "index.handler"
 }
+
 variable "memory_size" {
   type    = number
   default = 128
 }
 
 ## aws_cloudwatch_log_subscription_filter
-variable "filter_pattern" { 
-    description = "filter pattern for log data. Only works with streaming logs to elasticsearch"
-    type = string
-    default = "" 
+variable "filter_pattern" {
+  description = "filter pattern for log data. Only works with streaming logs to elasticsearch"
+  type        = string
+  default     = ""
 }
 
 ## shared
 variable "tags" {
-  type        = map(string)
+  type = map(string)
 }

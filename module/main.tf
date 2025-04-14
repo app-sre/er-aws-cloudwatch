@@ -9,8 +9,8 @@ resource "aws_cloudwatch_log_group" "this" {
 }
 
 resource "aws_iam_user" "this" {
-  name = var.identifier
-  tags = var.tags
+  name       = var.identifier
+  tags       = var.tags
   depends_on = [aws_cloudwatch_log_group.this]
 }
 
@@ -34,8 +34,8 @@ resource "aws_iam_policy" "this" {
         Resource = "${aws_cloudwatch_log_group.this.arn}:*"
       },
       {
-        Effect = "Allow",
-        Action = ["logs:DescribeLogGroups"],
+        Effect   = "Allow",
+        Action   = ["logs:DescribeLogGroups"],
         Resource = "*"
       }
     ]
@@ -106,8 +106,8 @@ resource "aws_iam_role_policy" "this" {
 resource "aws_lambda_function" "this" {
   count = var.es_identifier != null ? 1 : 0
 
-  filename         = "path/to/logtoes.zip" # Use external data source or manually manage
-  source_code_hash = filebase64sha256("path/to/logtoes.zip")
+  filename         = "/tmp/LogsToElasticsearch-${var.release_tag_name}.zip"
+  source_code_hash = filebase64sha256("/tmp/LogsToElasticsearch-${var.release_tag_name}.zip")
   function_name    = "${var.identifier}-lambda"
   handler          = var.handler
   runtime          = var.runtime
@@ -116,8 +116,8 @@ resource "aws_lambda_function" "this" {
   role             = aws_iam_role.this[0].arn
 
   vpc_config {
-    subnet_ids         = data.aws_elasticsearch_domain.this[0].vpc_options.subnet_ids
-    security_group_ids = data.aws_elasticsearch_domain.this[0].vpc_options.security_group_ids
+    subnet_ids         = data.aws_elasticsearch_domain.this[0].vpc_options[0].subnet_ids
+    security_group_ids = data.aws_elasticsearch_domain.this[0].vpc_options[0].security_group_ids
   }
 
   environment {
@@ -128,21 +128,21 @@ resource "aws_lambda_function" "this" {
 }
 
 resource "aws_lambda_permission" "this" {
-  count         = var.es_identifier != null ? 1 : 0
+  count = var.es_identifier != null ? 1 : 0
 
   statement_id  = "cloudwatch_allow"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.this[0].function_name
   principal     = "logs.amazonaws.com"
-  source_arn    = "${aws_cloudwatch_log_group.log_group.arn}:*"
+  source_arn    = "${aws_cloudwatch_log_group.this.arn}:*"
 }
 
 resource "aws_cloudwatch_log_subscription_filter" "lambda_filter" {
-  count         = var.es_identifier != null ? 1 : 0
+  count = var.es_identifier != null ? 1 : 0
 
-  name              = aws_lambda_function.this[0].function_name
-  log_group_name    = aws_cloudwatch_log_group.this.name
-  destination_arn   = aws_lambda_function.this[0].arn
-  filter_pattern    = var.filter_pattern
-  depends_on        = [aws_cloudwatch_log_group.this]
+  name            = aws_lambda_function.this[0].function_name
+  log_group_name  = aws_cloudwatch_log_group.this.name
+  destination_arn = aws_lambda_function.this[0].arn
+  filter_pattern  = var.filter_pattern
+  depends_on      = [aws_cloudwatch_log_group.this]
 }
