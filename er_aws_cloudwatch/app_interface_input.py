@@ -4,7 +4,7 @@ from typing import Any
 
 import requests
 from external_resources_io.input import AppInterfaceProvision
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 GH_BASE_URL = os.environ.get("GITHUB_API", "https://api.github.com")
 
@@ -13,6 +13,7 @@ class CloudwatchData(BaseModel):
     """Data model for AWS Cloudwatch"""
 
     # app-interface
+    description: str = Field(default="app-interface created Cloudwatch log group")
     region: str
     identifier: str
     output_resource_name: str | None = None
@@ -31,6 +32,9 @@ class CloudwatchData(BaseModel):
 
     # aws_cloudwatch_log_subscription_filter
     filter_pattern: str | None = None
+
+    # generated
+    lambda_file_path: str | None = None
 
     def download_es_lambda(self) -> None:
         """Responsible for downloading lambda repo and setting attr to use tf vars"""
