@@ -137,7 +137,7 @@ resource "aws_lambda_permission" "this" {
   source_arn    = "${aws_cloudwatch_log_group.this.arn}:*"
 }
 
-resource "aws_cloudwatch_log_subscription_filter" "lambda_filter" {
+resource "aws_cloudwatch_log_subscription_filter" "this" {
   count = var.es_identifier != null ? 1 : 0
 
   name            = aws_lambda_function.this[0].function_name
