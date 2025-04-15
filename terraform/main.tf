@@ -106,8 +106,8 @@ resource "aws_iam_role_policy" "this" {
 resource "aws_lambda_function" "this" {
   count = var.es_identifier != null ? 1 : 0
 
-  filename         = "/tmp/LogsToElasticsearch-${var.release_tag_name}.zip"
-  source_code_hash = filebase64sha256("/tmp/LogsToElasticsearch-${var.release_tag_name}.zip")
+  filename         = var.lambda_file_path
+  source_code_hash = filebase64sha256(var.lambda_file_path)
   function_name    = "${var.identifier}-lambda"
   handler          = var.handler
   runtime          = var.runtime
@@ -137,7 +137,7 @@ resource "aws_lambda_permission" "this" {
   source_arn    = "${aws_cloudwatch_log_group.this.arn}:*"
 }
 
-resource "aws_cloudwatch_log_subscription_filter" "lambda_filter" {
+resource "aws_cloudwatch_log_subscription_filter" "this" {
   count = var.es_identifier != null ? 1 : 0
 
   name            = aws_lambda_function.this[0].function_name

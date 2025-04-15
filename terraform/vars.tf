@@ -16,10 +16,10 @@ variable "es_identifier" {
   default     = null
 }
 
-variable "release_tag_name" {
-  description = "The value of `tag_name` attribute at /releases/latest endpoint for api.github.com for target lambda repo"
+variable "lambda_file_path" {
+  description = "Path for lambda repo downloaded from api.github.com for target lambda repo"
   type        = string
-  default     = "1.0.4"
+  default     = "/tmp/1.0.4-LogsToElasticsearch.zip"
 }
 
 # Variables directly used by resources
