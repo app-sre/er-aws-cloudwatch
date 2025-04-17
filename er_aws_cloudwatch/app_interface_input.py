@@ -1,8 +1,6 @@
 import os
-from pathlib import Path
 from typing import Any
 
-import requests
 from external_resources_io.input import AppInterfaceProvision
 from pydantic import BaseModel, Field
 
