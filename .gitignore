@@ -175,4 +175,4 @@ tmp/
 .vscode/
 
 # Terraform
-terraform/.terraform*
+module/.terraform*
