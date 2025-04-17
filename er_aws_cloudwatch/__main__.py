@@ -4,7 +4,7 @@ from external_resources_io.terraform import (
     create_tf_vars_json,
 )
 
-from .app_interface_input import AppInterfaceInput
+from er_aws_cloudwatch.app_interface_input import AppInterfaceInput
 
 
 def get_ai_input() -> AppInterfaceInput:
@@ -15,7 +15,6 @@ def get_ai_input() -> AppInterfaceInput:
 def main() -> None:
     """Proper entry point for the module."""
     ai_input = get_ai_input()
-    ai_input.data.download_es_lambda()
     create_backend_tf_file(ai_input.provision)
     create_tf_vars_json(ai_input.data)
 
