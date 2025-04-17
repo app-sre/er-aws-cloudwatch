@@ -103,11 +103,17 @@ resource "aws_iam_role_policy" "this" {
   })
 }
 
+data "archive_file" "this" {
+  type        = "zip"
+  source_file = "lambda_function.js"
+  output_path = "logs_to_es.zip"
+}
+
 resource "aws_lambda_function" "this" {
   count = var.es_identifier != null ? 1 : 0
 
-  filename         = var.lambda_file_path
-  source_code_hash = filebase64sha256(var.lambda_file_path)
+  filename         = "logs_to_es.zip"
+  source_code_hash = data.archive_file.this.output_base64sha256
   function_name    = "${var.identifier}-lambda"
   handler          = var.handler
   runtime          = var.runtime
