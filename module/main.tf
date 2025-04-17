@@ -40,6 +40,7 @@ resource "aws_iam_policy" "this" {
       }
     ]
   })
+  tags = var.tags
   depends_on = [aws_iam_user.this]
 }
 
