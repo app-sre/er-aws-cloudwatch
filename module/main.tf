@@ -40,7 +40,7 @@ resource "aws_iam_policy" "this" {
       }
     ]
   })
-  tags = var.tags
+  tags       = var.tags
   depends_on = [aws_iam_user.this]
 }
 
@@ -132,7 +132,7 @@ resource "aws_lambda_function" "this" {
       es_endpoint = data.aws_elasticsearch_domain.this[0].endpoint
     }
   }
-  tags              = var.tags
+  tags = var.tags
 }
 
 resource "aws_lambda_permission" "this" {
