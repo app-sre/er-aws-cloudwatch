@@ -106,7 +106,7 @@ resource "aws_iam_role_policy" "this" {
 
 data "archive_file" "this" {
   type        = "zip"
-  source_file = "lambda_function.js"
+  source_file = "index.js"
   output_path = "logs_to_es.zip"
 }
 
@@ -132,6 +132,7 @@ resource "aws_lambda_function" "this" {
       es_endpoint = data.aws_elasticsearch_domain.this[0].endpoint
     }
   }
+  tags              = var.tags
 }
 
 resource "aws_lambda_permission" "this" {
