@@ -40,6 +40,7 @@ resource "aws_iam_policy" "this" {
       }
     ]
   })
+  tags = var.tags
   depends_on = [aws_iam_user.this]
 }
 
@@ -103,11 +104,17 @@ resource "aws_iam_role_policy" "this" {
   })
 }
 
+data "archive_file" "this" {
+  type        = "zip"
+  source_file = "index.js"
+  output_path = var.lambda_file_path
+}
+
 resource "aws_lambda_function" "this" {
   count = var.es_identifier != null ? 1 : 0
 
   filename         = var.lambda_file_path
-  source_code_hash = filebase64sha256(var.lambda_file_path)
+  source_code_hash = data.archive_file.this.output_base64sha256
   function_name    = "${var.identifier}-lambda"
   handler          = var.handler
   runtime          = var.runtime
@@ -125,6 +132,7 @@ resource "aws_lambda_function" "this" {
       es_endpoint = data.aws_elasticsearch_domain.this[0].endpoint
     }
   }
+  tags              = var.tags
 }
 
 resource "aws_lambda_permission" "this" {

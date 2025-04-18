@@ -16,12 +16,6 @@ variable "es_identifier" {
   default     = null
 }
 
-variable "lambda_file_path" {
-  description = "Path for lambda repo downloaded from api.github.com for target lambda repo"
-  type        = string
-  default     = "/tmp/1.0.4-LogsToElasticsearch.zip"
-}
-
 # Variables directly used by resources
 ## aws_cloudwatch_log_group
 variable "retention_in_days" {
@@ -48,6 +42,12 @@ variable "handler" {
 variable "memory_size" {
   type    = number
   default = 128
+}
+
+variable "lambda_file_path" {
+  description = "Path of data.archive_file output file to reference in lambda function"
+  type        = string
+  default     = "logs_to_es.zip"
 }
 
 ## aws_cloudwatch_log_subscription_filter

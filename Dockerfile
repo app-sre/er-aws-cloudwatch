@@ -12,7 +12,7 @@ ENV \
     # disable uv cache. it doesn't make sense in a container
     UV_NO_CACHE=true \
     UV_NO_PROGRESS=true \
-    TERRAFORM_MODULE_SRC_DIR="${APP}/terraform"
+    TERRAFORM_MODULE_SRC_DIR="${APP}/module"
 
 COPY pyproject.toml uv.lock ./
 # Test lock file is up to date
@@ -28,7 +28,7 @@ COPY er_aws_cloudwatch ./er_aws_cloudwatch
 RUN uv sync --frozen --no-group dev
 
 # Copy the module directory and set 777 permissions.
-COPY terraform ./terraform
+COPY module ./module
 
 # Get the terraform providers
 RUN terraform-provider-sync

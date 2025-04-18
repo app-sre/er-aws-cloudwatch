@@ -14,7 +14,7 @@ code_tests:
 
 .PHONY: terraform_tests
 terraform_tests:
-	terraform fmt -check -diff terraform/
+	terraform fmt -check -diff module/
 
 
 .PHONY: test
