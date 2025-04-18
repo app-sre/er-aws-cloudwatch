@@ -1,10 +1,7 @@
-import os
 from typing import Any
 
 from external_resources_io.input import AppInterfaceProvision
 from pydantic import BaseModel, Field
-
-GH_BASE_URL = os.environ.get("GITHUB_API", "https://api.github.com")
 
 
 class CloudwatchData(BaseModel):
