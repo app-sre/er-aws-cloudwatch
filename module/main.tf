@@ -2,6 +2,8 @@ provider "aws" {
   region = var.region
 }
 
+provider "archive" {}
+
 resource "aws_cloudwatch_log_group" "this" {
   name              = var.identifier
   retention_in_days = var.retention_in_days

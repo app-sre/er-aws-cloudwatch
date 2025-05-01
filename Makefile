@@ -16,7 +16,6 @@ code_tests:
 terraform_tests:
 	terraform fmt -check -diff module/
 
-
 .PHONY: test
 test: code_tests terraform_tests
 
@@ -27,7 +26,12 @@ build_test:
 .PHONY: build
 build:
 	$(CONTAINER_ENGINE) build --progress plain --target prod -t er-aws-cloudwatch:prod .
+
 .PHONY: dev
 dev:
 	# Prepare local development environment
 	uv sync
+
+.PHONY: providers-lock
+providers-lock:
+	terraform -chdir=module providers lock -platform=linux_amd64 -platform=linux_arm64 -platform=darwin_amd64 -platform=darwin_arm64
