@@ -1,37 +1,28 @@
-# Variables used by App-Interface. Not part of the resources definition.
-variable "identifier" {
-  description = "The resource identifier"
-  type        = string
+variable "default_tags" {
+  type    = list(map(any))
+  default = []
 }
 
-variable "region" {
-  description = "The region where the cloudwatch log group and supporting resources will be created"
-  type        = string
-  default     = "us-east-1"
+variable "default_tags_tf" {
+  type    = map(any)
+  default = null
+}
+
+variable "description" {
+  type    = string
+  default = "app-interface created Cloudwatch log group"
 }
 
 variable "es_identifier" {
-  description = "Identifier of an existing elasticsearch. It will create a AWS lambda to stream logs to elasticsearch service"
   type        = string
   default     = null
+  description = "Identifier of an existing elasticsearch. It will create a AWS lambda to stream logs to elasticsearch service"
 }
 
-# Variables directly used by resources
-## aws_cloudwatch_log_group
-variable "retention_in_days" {
-  description = "Number of days to retain log events in the log group"
-  type        = number
-}
-
-## aws_lambda_function
-variable "runtime" {
-  type    = string
-  default = "nodejs18.x"
-}
-
-variable "timeout" {
-  type    = number
-  default = 30
+variable "filter_pattern" {
+  type        = string
+  default     = ""
+  description = "filter pattern for log data. Only works with streaming logs to elasticsearch"
 }
 
 variable "handler" {
@@ -39,25 +30,54 @@ variable "handler" {
   default = "index.handler"
 }
 
+variable "identifier" {
+  type        = string
+  description = "The resource identifier"
+}
+
+variable "lambda_file_path" {
+  type        = string
+  default     = "logs_to_es.zip"
+  description = "Path of data.archive_file output file to reference in lambda function"
+}
+
 variable "memory_size" {
   type    = number
   default = 128
 }
 
-variable "lambda_file_path" {
-  description = "Path of data.archive_file output file to reference in lambda function"
-  type        = string
-  default     = "logs_to_es.zip"
+variable "output_resource_name" {
+  type    = string
+  default = null
 }
 
-## aws_cloudwatch_log_subscription_filter
-variable "filter_pattern" {
-  description = "filter pattern for log data. Only works with streaming logs to elasticsearch"
+variable "region" {
   type        = string
-  default     = ""
+  default     = "us-east-1"
+  description = "The region where the cloudwatch log group and supporting resources will be created"
 }
 
-## shared
+variable "release_url" {
+  type    = string
+  default = null
+}
+
+variable "retention_in_days" {
+  type        = number
+  description = "Number of days to retain log events in the log group"
+}
+
+variable "runtime" {
+  type    = string
+  default = "nodejs18.x"
+}
+
 variable "tags" {
-  type = map(string)
+  type    = map(any)
+  default = null
+}
+
+variable "timeout" {
+  type    = number
+  default = 30
 }

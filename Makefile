@@ -32,6 +32,10 @@ dev:
 	# Prepare local development environment
 	uv sync
 
+.PHONY: generate-variables-tf
+generate-variables-tf:
+	external-resources-io tf generate-variables-tf er_aws_cloudwatch.app_interface_input.AppInterfaceInput --output module/vars.tf
+
 .PHONY: providers-lock
 providers-lock:
 	terraform -chdir=module providers lock -platform=linux_amd64 -platform=linux_arm64 -platform=darwin_amd64 -platform=darwin_arm64
