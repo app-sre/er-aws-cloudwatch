@@ -24,7 +24,6 @@ def raw_input_data() -> dict:
                 "environment": "production",
                 "app": "cloudwatch-example",
             },
-            "default_tags": [{"tags": {"app": "app-sre-infra"}}],
             "region": "us-east-1",
         },
         "provision": {

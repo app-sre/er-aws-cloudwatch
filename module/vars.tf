@@ -1,13 +1,3 @@
-variable "default_tags" {
-  type    = list(map(any))
-  default = []
-}
-
-variable "default_tags_tf" {
-  type    = map(any)
-  default = null
-}
-
 variable "description" {
   type    = string
   default = "app-interface created Cloudwatch log group"
@@ -73,8 +63,8 @@ variable "runtime" {
 }
 
 variable "tags" {
-  type    = map(any)
-  default = null
+  type    = map(string)
+  default = {}
 }
 
 variable "timeout" {
