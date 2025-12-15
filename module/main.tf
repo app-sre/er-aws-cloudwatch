@@ -104,7 +104,7 @@ resource "aws_iam_role_policy" "this" {
       {
         Effect   = "Allow",
         Action   = "es:*",
-        Resource = "*"
+        Resource = "arn:aws:es:*"
       }
     ]
   })
@@ -146,7 +146,7 @@ resource "aws_lambda_permission" "this" {
 
   statement_id  = "cloudwatch_allow"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.this[0].function_name
+  function_name = aws_lambda_function.this[0].arn
   principal     = "logs.amazonaws.com"
   source_arn    = "${aws_cloudwatch_log_group.this.arn}:*"
 }
