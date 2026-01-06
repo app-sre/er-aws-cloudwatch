@@ -168,16 +168,16 @@ data "aws_cloudwatch_log_groups" "lambda_logs" {
 }
 
 import {
-  for_each = toset(data.aws_cloudwatch_log_groups.lambda_logs.log_group_names)
+  for_each = toset(flatten(data.aws_cloudwatch_log_groups.lambda_logs[*].log_group_names))
 
-  to = aws_cloudwatch_log_group.lambda_logs
+  to = aws_cloudwatch_log_group.lambda_logs[0]
   id = each.value
 }
 
 resource "aws_cloudwatch_log_group" "lambda_logs" {
-  for_each = toset(data.aws_cloudwatch_log_groups.lambda_logs.log_group_names)
+  count = var.es_identifier != null ? 1 : 0
 
-  name              = each.value
+  name              = "/aws/lambda/${var.identifier}-lambda"
   retention_in_days = var.retention_in_days
   tags              = var.tags
 }
