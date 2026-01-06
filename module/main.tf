@@ -160,3 +160,22 @@ resource "aws_cloudwatch_log_subscription_filter" "this" {
   filter_pattern  = var.filter_pattern
   depends_on      = [aws_cloudwatch_log_group.this]
 }
+
+data "aws_cloudwatch_log_groups" "lambda_logs" {
+  count = var.es_identifier != null ? 1 : 0
+
+  log_group_name_prefix = "/aws/lambda/${var.identifier}-lambda"
+}
+import {
+  for_each = toset(data.aws_cloudwatch_log_groups.lambda_logs.log_group_names)
+  to = aws_cloudwatch_log_group.lambda_logs
+  id = each.value
+}
+
+resource "aws_cloudwatch_log_group" "lambda_logs" {
+  for_each = toset(data.aws_cloudwatch_log_groups.lambda_logs.log_group_names)
+
+  name              = each.value
+  retention_in_days = var.retention_in_days
+  tags              = var.tags
+}
