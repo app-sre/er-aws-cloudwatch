@@ -166,8 +166,10 @@ data "aws_cloudwatch_log_groups" "lambda_logs" {
 
   log_group_name_prefix = "/aws/lambda/${var.identifier}-lambda"
 }
+
 import {
   for_each = toset(data.aws_cloudwatch_log_groups.lambda_logs.log_group_names)
+
   to = aws_cloudwatch_log_group.lambda_logs
   id = each.value
 }
