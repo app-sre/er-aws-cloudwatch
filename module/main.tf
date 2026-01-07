@@ -161,19 +161,14 @@ resource "aws_cloudwatch_log_subscription_filter" "this" {
   depends_on      = [aws_cloudwatch_log_group.this]
 }
 
-data "aws_cloudwatch_log_groups" "lambda_logs" {
-  count = var.es_identifier != null ? 1 : 0
-
-  log_group_name_prefix = "/aws/lambda/${var.identifier}-lambda"
-}
-
+# Import existing lambda log group if it exists and is unmanaged
 import {
-  for_each = toset(flatten(data.aws_cloudwatch_log_groups.lambda_logs[*].log_group_names))
-
-  to = aws_cloudwatch_log_group.lambda_logs[0]
-  id = each.value
+  for_each = var.should_import_lambda_log_group ? toset(["import"]) : []
+  to       = aws_cloudwatch_log_group.lambda_logs[0]
+  id       = "/aws/lambda/${var.identifier}-lambda"
 }
 
+# Lambda log group resource
 resource "aws_cloudwatch_log_group" "lambda_logs" {
   count = var.es_identifier != null ? 1 : 0
 

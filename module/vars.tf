@@ -71,3 +71,9 @@ variable "timeout" {
   type    = number
   default = 30
 }
+
+variable "should_import_lambda_log_group" {
+  type        = bool
+  default     = false
+  description = "Whether to import existing lambda log group (updated by pre_plan hook)"
+}
