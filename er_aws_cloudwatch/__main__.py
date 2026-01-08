@@ -4,7 +4,7 @@ from external_resources_io.terraform import (
     create_tf_vars_json,
 )
 
-from er_aws_cloudwatch.app_interface_input import AppInterfaceInput
+from er_aws_cloudwatch.app_interface_input import AppInterfaceInput, TerraformModuleData
 
 
 def get_ai_input() -> AppInterfaceInput:
@@ -16,7 +16,8 @@ def main() -> None:
     """Proper entry point for the module."""
     ai_input = get_ai_input()
     create_backend_tf_file(ai_input.provision)
-    create_tf_vars_json(ai_input.data)
+    tf = TerraformModuleData(ai_input=ai_input)
+    create_tf_vars_json(tf)
 
 
 if __name__ == "__main__":
