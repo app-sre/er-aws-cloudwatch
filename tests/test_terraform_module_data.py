@@ -1,11 +1,15 @@
-"""Tests for the TerraformModuleData class."""
+"""Tests for the process_input_data function."""
 
 from collections.abc import Iterator
 from unittest.mock import Mock, patch
 
 import pytest
 
-from er_aws_cloudwatch.app_interface_input import AppInterfaceInput, TerraformModuleData
+from er_aws_cloudwatch.app_interface_input import (
+    AppInterfaceInput,
+    Cloudwatch,
+    process_input_data,
+)
 
 
 @pytest.fixture
@@ -20,52 +24,48 @@ def mock_logs_client() -> Mock:
     """Create a mock CloudWatch Logs client."""
     client = Mock()
     client.describe_log_groups.return_value = {"logGroups": []}
-    client.list_tags_log_group.return_value = {"tags": {}}
     return client
 
 
-class TestTerraformModuleData:
-    """Test cases for TerraformModuleData computed fields."""
+class TestProcessInputData:
+    """Test cases for process_input_data function."""
 
-    def test_should_import_lambda_log_group_no_es_identifier(  # noqa: PLR6301
+    def test_process_input_data_no_es_identifier(  # noqa: PLR6301
         self, ai_input: AppInterfaceInput, mock_boto3_client: Mock
     ) -> None:
-        """Test that function returns False when es_identifier is None."""
+        """Test that function returns empty list when es_identifier is None."""
         ai_input.data.es_identifier = None
-        tf_data = TerraformModuleData(ai_input=ai_input)
-        result = tf_data.should_import_lambda_log_group
-        assert result is False
+        result = process_input_data(ai_input.data)
+        assert result.import_log_group_lambda_function_names == []
         mock_boto3_client.assert_not_called()
 
-    def test_should_import_lambda_log_group_log_group_not_found(  # noqa: PLR6301
+    def test_process_input_data_log_group_not_found(  # noqa: PLR6301
         self,
         ai_input: AppInterfaceInput,
         mock_boto3_client: Mock,
         mock_logs_client: Mock,
     ) -> None:
-        """Test that function returns False when log group doesn't exist."""
+        """Test that function returns empty list when log group doesn't exist."""
         mock_boto3_client.return_value = mock_logs_client
         mock_logs_client.describe_log_groups.return_value = {"logGroups": []}
 
-        tf_data = TerraformModuleData(ai_input=ai_input)
-        result = tf_data.should_import_lambda_log_group
+        result = process_input_data(ai_input.data)
 
-        assert result is False
+        assert result.import_log_group_lambda_function_names == []
         mock_boto3_client.assert_called_once_with(
             "logs", region_name=ai_input.data.region
         )
         mock_logs_client.describe_log_groups.assert_called_once_with(
             logGroupNamePrefix="/aws/lambda/cloudwatch-example-es-01-lambda"
         )
-        mock_logs_client.list_tags_log_group.assert_not_called()
 
-    def test_should_import_lambda_log_group_unmanaged_returns_true(  # noqa: PLR6301
+    def test_process_input_data_log_group_exists(  # noqa: PLR6301
         self,
         ai_input: AppInterfaceInput,
         mock_boto3_client: Mock,
         mock_logs_client: Mock,
     ) -> None:
-        """Test that function returns True when log group exists but is unmanaged."""
+        """Test that function includes function name when log group exists."""
         mock_boto3_client.return_value = mock_logs_client
         mock_logs_client.describe_log_groups.return_value = {
             "logGroups": [
@@ -75,31 +75,26 @@ class TestTerraformModuleData:
                 }
             ]
         }
-        # No managed_by_integration tag (unmanaged)
-        mock_logs_client.list_tags_log_group.return_value = {
-            "tags": {
-                "environment": "production",
-                "app": "some-other-app",
-            }
-        }
 
-        tf_data = TerraformModuleData(ai_input=ai_input)
-        result = tf_data.should_import_lambda_log_group
+        result = process_input_data(ai_input.data)
 
-        assert result is True
-        mock_logs_client.describe_log_groups.assert_called_once()
-        mock_logs_client.list_tags_log_group.assert_called_once_with(
-            logGroupName="/aws/lambda/cloudwatch-example-es-01-lambda"
+        assert result.import_log_group_lambda_function_names == [
+            "cloudwatch-example-es-01-lambda"
+        ]
+        mock_logs_client.describe_log_groups.assert_called_once_with(
+            logGroupNamePrefix="/aws/lambda/cloudwatch-example-es-01-lambda"
         )
 
-    def test_should_import_lambda_log_group_managed_returns_false(  # noqa: PLR6301
+    def test_process_input_data_multiple_scenarios(  # noqa: PLR6301
         self,
         ai_input: AppInterfaceInput,
         mock_boto3_client: Mock,
         mock_logs_client: Mock,
     ) -> None:
-        """Test that function returns False when log group exists and is managed."""
+        """Test function behavior with various input scenarios."""
         mock_boto3_client.return_value = mock_logs_client
+
+        # Test with existing log group
         mock_logs_client.describe_log_groups.return_value = {
             "logGroups": [
                 {
@@ -108,16 +103,11 @@ class TestTerraformModuleData:
                 }
             ]
         }
-        mock_logs_client.list_tags_log_group.return_value = {
-            "tags": {
-                "managed_by_integration": "external_resources",
-                "environment": "production",
-            }
-        }
 
-        tf_data = TerraformModuleData(ai_input=ai_input)
-        result = tf_data.should_import_lambda_log_group
-
-        assert result is False
-        mock_logs_client.describe_log_groups.assert_called_once()
-        mock_logs_client.list_tags_log_group.assert_called_once()
+        result = process_input_data(ai_input.data)
+        assert isinstance(result, Cloudwatch)
+        assert result.import_log_group_lambda_function_names == [
+            "cloudwatch-example-es-01-lambda"
+        ]
+        assert result.identifier == ai_input.data.identifier
+        assert result.region == ai_input.data.region

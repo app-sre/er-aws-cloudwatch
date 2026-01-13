@@ -58,6 +58,10 @@ resource "aws_iam_user_policy_attachment" "this" {
 
 # All proceeding resources are optional and support streaming to elasticsearch
 # All resources are enabled by specifying es_identifier
+locals {
+  es_lambda_function_name = "${var.identifier}-lambda"
+  lambda_function_names   = var.es_identifier != null ? [local.es_lambda_function_name] : []
+}
 
 data "aws_elasticsearch_domain" "this" {
   count = var.es_identifier != null ? 1 : 0
@@ -68,7 +72,7 @@ data "aws_elasticsearch_domain" "this" {
 resource "aws_iam_role" "this" {
   count = var.es_identifier != null ? 1 : 0
 
-  name = "${var.identifier}-lambda-execution-role"
+  name = "${local.es_lambda_function_name}-execution-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
@@ -84,7 +88,7 @@ resource "aws_iam_role" "this" {
 resource "aws_iam_role_policy" "this" {
   count = var.es_identifier != null ? 1 : 0
 
-  name = "${var.identifier}-lambda-execution-policy"
+  name = "${local.es_lambda_function_name}-execution-policy"
   role = aws_iam_role.this[0].id
   policy = jsonencode({
     Version = "2012-10-17",
@@ -121,7 +125,7 @@ resource "aws_lambda_function" "this" {
 
   filename         = var.lambda_file_path
   source_code_hash = data.archive_file.this.output_base64sha256
-  function_name    = "${var.identifier}-lambda"
+  function_name    = local.es_lambda_function_name
   handler          = var.handler
   runtime          = var.runtime
   timeout          = var.timeout
@@ -161,18 +165,20 @@ resource "aws_cloudwatch_log_subscription_filter" "this" {
   depends_on      = [aws_cloudwatch_log_group.this]
 }
 
-# Import existing lambda log group if it exists and is unmanaged
+# Import existing lambda log group(s) if exist and unmanaged
+# var.import_log_group_lambda_function_names compueted in app_interface_input
 import {
-  for_each = var.should_import_lambda_log_group ? toset(["import"]) : []
-  to       = aws_cloudwatch_log_group.lambda_logs[0]
-  id       = "/aws/lambda/${var.identifier}-lambda"
+  for_each = var.import_log_group_lambda_function_names
+  to       = aws_cloudwatch_log_group.lambda_logs[each.value]
+  id       = "/aws/lambda/${each.value}"
 }
 
-# Lambda log group resource
 resource "aws_cloudwatch_log_group" "lambda_logs" {
-  count = var.es_identifier != null ? 1 : 0
+  for_each = {
+    for name in local.lambda_function_names : name => name
+  }
 
-  name              = "/aws/lambda/${var.identifier}-lambda"
+  name              = "/aws/lambda/${each.value}"
   retention_in_days = var.retention_in_days
   tags              = var.tags
 }

@@ -25,6 +25,12 @@ variable "identifier" {
   description = "The resource identifier"
 }
 
+variable "import_log_group_lambda_function_names" {
+  type        = list(string)
+  default     = null
+  description = "Additional log groups associated with lambda to manage"
+}
+
 variable "lambda_file_path" {
   type        = string
   default     = "logs_to_es.zip"
@@ -70,10 +76,4 @@ variable "tags" {
 variable "timeout" {
   type    = number
   default = 30
-}
-
-variable "should_import_lambda_log_group" {
-  type        = bool
-  default     = false
-  description = "Whether to import existing lambda log group (updated by pre_plan hook)"
 }

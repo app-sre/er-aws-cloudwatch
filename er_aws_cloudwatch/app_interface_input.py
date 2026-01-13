@@ -3,7 +3,7 @@ import logging
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 from external_resources_io.input import AppInterfaceProvision
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field
 
 
 class Cloudwatch(BaseModel):
@@ -45,6 +45,12 @@ class Cloudwatch(BaseModel):
         description="filter pattern for log data. Only works with streaming logs to elasticsearch",
     )
 
+    # computed fields for module
+    import_log_group_lambda_function_names: list[str] | None = Field(
+        default=None,
+        description="Additional log groups associated with lambda to manage",
+    )
+
 
 class AppInterfaceInput(BaseModel):
     """Input model class"""
@@ -53,52 +59,35 @@ class AppInterfaceInput(BaseModel):
     provision: AppInterfaceProvision
 
 
-class TerraformModuleData(Cloudwatch):
-    """Vars for the Terraform module"""
-
-    def __init__(self, ai_input: AppInterfaceInput) -> None:
-        # Initialize with all the data from ai_input.data
-        super().__init__(**ai_input.data.model_dump())
-
-    @computed_field
-    def should_import_lambda_log_group(self) -> bool:
-        """Determine if lambda log group needs to be imported"""
-        logger = logging.getLogger(__name__)
-
-        if not self.es_identifier:
+def log_group_exists(function_name: str, region: str) -> bool:
+    log_group_name = f"/aws/lambda/{function_name}"
+    logger = logging.getLogger(__name__)
+    try:
+        client = boto3.client("logs", region_name=region)
+        response = client.describe_log_groups(logGroupNamePrefix=log_group_name)
+        log_groups = response.get("logGroups", [])
+        # Ensure exact match in case logGroupNamePrefix found additional groups
+        target_group = next(
+            (lg for lg in log_groups if lg.get("logGroupName") == log_group_name),
+            None,
+        )
+        if not target_group:
+            logger.debug(f"Existing log group {log_group_name} not found.")
             return False
+        return True  # noqa: TRY300
+    except (ClientError, BotoCoreError) as e:
+        logger.warning(f"Failed to check log group {log_group_name}: {e}.")
+        raise
 
-        log_group_name = f"/aws/lambda/{self.identifier}-lambda"
-        try:
-            client = boto3.client("logs", region_name=self.region)
-            response = client.describe_log_groups(logGroupNamePrefix=log_group_name)
-            log_groups = response.get("logGroups", [])
 
-            # Ensure exact match in case logGroupNamePrefix found additional groups
-            target_group = next(
-                (lg for lg in log_groups if lg.get("logGroupName") == log_group_name),
-                None,
-            )
-            if not target_group:
-                logger.debug(f"Existing log group {log_group_name} not found.")
-                return False
-
-            tags_response = client.list_tags_log_group(logGroupName=log_group_name)
-            tags = tags_response.get("tags", {})
-            managed_by_tag = tags.get("managed_by_integration")
-
-            should_import = managed_by_tag != "external_resources"
-            if should_import:
-                logger.info(
-                    f"Log group {log_group_name} exists but not managed by external_resources "
-                    f"(managed_by_integration={managed_by_tag}). Import needed."
-                )
-            else:
-                logger.debug(
-                    f"Log group {log_group_name} already managed by external_resources."
-                )
-            return should_import  # noqa: TRY300
-
-        except (ClientError, BotoCoreError) as e:
-            logger.warning(f"Failed to check log group {log_group_name}: {e}.")
-            raise
+def process_input_data(data: Cloudwatch) -> Cloudwatch:
+    lambda_function_names = [f"{data.identifier}-lambda"] if data.es_identifier else []
+    import_log_group_lambda_function_names = [
+        name for name in lambda_function_names if log_group_exists(name, data.region)
+    ]
+    return Cloudwatch.model_validate(
+        data.model_dump()
+        | {
+            "import_log_group_lambda_function_names": import_log_group_lambda_function_names
+        }
+    )
