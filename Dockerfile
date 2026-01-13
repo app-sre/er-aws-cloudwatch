@@ -1,4 +1,4 @@
-FROM localhost/er-base-tf-1-7 AS base
+FROM localhost/er-as-terraform:1.13.4 AS base
 # keep in sync with pyproject.toml
 LABEL konflux.additional-tags="0.5.0"
 
