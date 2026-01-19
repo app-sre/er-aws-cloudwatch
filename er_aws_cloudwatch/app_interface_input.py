@@ -60,24 +60,17 @@ class AppInterfaceInput(BaseModel):
 
 
 def log_group_exists(function_name: str, region: str) -> bool:
-    log_group_name = f"/aws/lambda/{function_name}"
     logger = logging.getLogger(__name__)
+    log_group_name = f"/aws/lambda/{function_name}"
     try:
         client = boto3.client("logs", region_name=region)
         response = client.describe_log_groups(logGroupNamePrefix=log_group_name)
-        log_groups = response.get("logGroups", [])
-        # Ensure exact match in case logGroupNamePrefix found additional groups
-        target_group = next(
-            (lg for lg in log_groups if lg.get("logGroupName") == log_group_name),
-            None,
-        )
-        if not target_group:
-            logger.debug(f"Existing log group {log_group_name} not found.")
-            return False
-        return True  # noqa: TRY300
     except (ClientError, BotoCoreError) as e:
         logger.warning(f"Failed to check log group {log_group_name}: {e}.")
         raise
+    log_groups = response.get("logGroups", [])
+    # Ensure exact match in case logGroupNamePrefix found additional groups
+    return any(lg.get("logGroupName") == log_group_name for lg in log_groups)
 
 
 def process_input_data(data: Cloudwatch) -> Cloudwatch:
