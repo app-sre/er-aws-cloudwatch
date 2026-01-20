@@ -25,6 +25,12 @@ variable "identifier" {
   description = "The resource identifier"
 }
 
+variable "import_log_group_lambda_function_names" {
+  type        = list(string)
+  default     = null
+  description = "Additional log groups associated with lambda to manage"
+}
+
 variable "lambda_file_path" {
   type        = string
   default     = "logs_to_es.zip"
