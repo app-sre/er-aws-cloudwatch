@@ -1,6 +1,6 @@
 [project]
 name = "er-aws-cloudwatch"
-version = "0.5.0"
+version = "0.5.1"
 description = "ERv2 module for managing AWS Cloudwatch log groups"
 authors = [{ name = "AppSRE", email = "sd-app-sre@redhat.com" }]
 license = { text = "Apache 2.0" }
