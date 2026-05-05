@@ -1,6 +1,6 @@
 [project]
 name = "er-aws-cloudwatch"
-version = "0.5.1"
+version = "0.5.2"
 description = "ERv2 module for managing AWS Cloudwatch log groups"
 authors = [{ name = "AppSRE", email = "sd-app-sre@redhat.com" }]
 license = { text = "Apache 2.0" }
@@ -9,7 +9,7 @@ requires-python = "~= 3.12.0"
 dependencies = [
     "boto3-stubs[logs]==1.42.88",
     "boto3==1.42.88",
-    "external-resources-io==0.6.2",
+    "external-resources-io==0.6.4",
     "pydantic==2.12.5",
 ]
 
@@ -20,7 +20,7 @@ documentation = "https://github.com/app-sre/er-aws-cloudwatch"
 
 [dependency-groups]
 dev = [
-    "external-resources-io[cli]==0.6.2",
+    "external-resources-io[cli]==0.6.4",
     "mypy==1.20.1",
     "pytest-cov==7.1.0",
     "pytest-mock==3.15.1",
