@@ -9,7 +9,7 @@ External Resources module to provision and manage CloudWatch log groups in AWS w
 
 * Terraform
 * AWS provider
-* Python 3.12
+* Python 3.14
 * Pydantic
 
 ## Development
