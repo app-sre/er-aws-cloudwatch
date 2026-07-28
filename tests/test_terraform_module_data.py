@@ -34,7 +34,7 @@ def mock_logs_client() -> Mock:
 class TestProcessInputData:
     """Test cases for process_input_data function."""
 
-    def test_process_input_data_no_es_identifier(  # noqa: PLR6301
+    def test_process_input_data_no_es_identifier(  # ruff: ignore[no-self-use]
         self, ai_input: AppInterfaceInput, mock_boto3_client: Mock
     ) -> None:
         """Test that function returns empty list when es_identifier is None."""
@@ -43,7 +43,7 @@ class TestProcessInputData:
         assert result.import_log_group_lambda_function_names == []
         mock_boto3_client.assert_not_called()
 
-    def test_process_input_data_log_group_not_found(  # noqa: PLR6301
+    def test_process_input_data_log_group_not_found(  # ruff: ignore[no-self-use]
         self,
         ai_input: AppInterfaceInput,
         mock_boto3_client: Mock,
@@ -63,7 +63,7 @@ class TestProcessInputData:
             logGroupNamePrefix="/aws/lambda/cloudwatch-example-es-01-lambda"
         )
 
-    def test_process_input_data_log_group_exists(  # noqa: PLR6301
+    def test_process_input_data_log_group_exists(  # ruff: ignore[no-self-use]
         self,
         ai_input: AppInterfaceInput,
         mock_boto3_client: Mock,
@@ -89,7 +89,7 @@ class TestProcessInputData:
             logGroupNamePrefix="/aws/lambda/cloudwatch-example-es-01-lambda"
         )
 
-    def test_process_input_data_multiple_scenarios(  # noqa: PLR6301
+    def test_process_input_data_multiple_scenarios(  # ruff: ignore[no-self-use]
         self,
         ai_input: AppInterfaceInput,
         mock_boto3_client: Mock,
