@@ -4,7 +4,7 @@ LABEL konflux.additional-tags="0.6.0"
 ENV TERRAFORM_MODULE_SRC_DIR="./module"
 
 FROM base AS builder
-COPY --from=ghcr.io/astral-sh/uv:0.12.2@sha256:069a51314a7bb6031777a9273205fe1b0b19e914ef418207d1338b268df641dd /uv /bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.12.4@sha256:d0a6eca6c669dc7e9c51218707b8438a3d30402733d739dcc00adb3e213e8f5c /uv /bin/uv
 
 
 COPY pyproject.toml uv.lock ./
